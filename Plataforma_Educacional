@@ -1,0 +1,244 @@
+from datetime import datetime
+
+# Banco de dados simulado
+usuarios = {}
+
+cursos = {
+    "Infraestrutura Computacional": [],
+    "Tecnologia da Informação e Comunicação": [],
+    "Matemática e Estatística": [],
+    "Programação com Python": []
+}
+
+def linha():
+    print("-" * 50)
+
+def pause():
+    input("\nPressione Enter para continuar...")
+
+def registrar_log(acao):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("log.txt", "a", encoding="utf-8") as f:
+        f.write(f"[{timestamp}] {acao}\n")
+
+def cadastro():
+    print("\n=== Cadastro de Novo Usuário ===")
+    nome = input("Nome completo: ")
+    cpf = input("CPF: ")
+    endereco = input("Endereço: ")
+    email = input("E-mail: ")
+    confirm_email = input("Confirmar E-mail: ")
+    if email != confirm_email:
+        print("Os e-mails não coincidem.")
+        return
+    senha = input("Senha: ")
+    confirm_senha = input("Confirmar senha: ")
+    if senha != confirm_senha:
+        print("As senhas não coincidem.")
+        return
+    if email in usuarios:
+        print("E-mail já cadastrado!")
+        return
+    usuarios[email] = {
+        "nome": nome,
+        "cpf": cpf,
+        "endereco": endereco,
+        "senha": senha,
+        "matriculas": {}
+    }
+    registrar_log(f"Usuário cadastrado: {email}")
+    print("Cadastro realizado com sucesso!")
+
+def login():
+    print("\n=== Login de Usuário ===")
+    email = input("E-mail: ")
+    senha = input("Senha: ")
+    if email in usuarios and usuarios[email]["senha"] == senha:
+        print(f"\nBem-vindo(a), {usuarios[email]['nome']}!")
+        menu_usuario(email)
+    else:
+        print("E-mail ou senha incorretos.")
+
+def recuperar_senha():
+    print("\n=== Recuperação de Senha ===")
+    email = input("Digite seu e-mail: ")
+    if email in usuarios:
+        print("Um link de redefinição foi enviado para seu e-mail (simulado).")
+    else:
+        print("E-mail não encontrado.")
+
+def login_admin():
+    print("\n=== Login de Administrador ===")
+    email = input("E-mail: ")
+    senha = input("Senha: ")
+    if email == "admin@plataforma.com.br" and senha == "tc@tnoC":
+        print("Login de administrador realizado com sucesso.")
+        menu_admin()
+    else:
+        print("Credenciais inválidas.")
+
+def menu_login():
+    while True:
+        linha()
+        print("=== Plataforma de Educação Digital ===")
+        print("1 - Login como Administrador")
+        print("2 - Cadastrar-se")
+        print("3 - Login")
+        print("4 - Esqueci minha senha")
+        print("0 - Sair")
+        linha()
+        opcao = input("Escolha uma opção: ")
+        if opcao == "1":
+            login_admin()
+        elif opcao == "2":
+            cadastro()
+        elif opcao == "3":
+            login()
+        elif opcao == "4":
+            recuperar_senha()
+        elif opcao == "0":
+            print("Saindo...")
+            break
+        else:
+            print("Opção inválida.")
+
+def menu_usuario(email):
+    while True:
+        linha()
+        print("1 - Ver Cursos")
+        print("2 - Sair")
+        linha()
+        opcao = input("Escolha uma opção: ")
+        if opcao == "1":
+            ver_cursos(email)
+        elif opcao == "2":
+            print("Saindo da conta...")
+            break
+        else:
+            print("Opção inválida.")
+
+def ver_cursos(email):
+    print("\n=== Lista de Cursos ===")
+    for i, curso in enumerate(cursos.keys(), 1):
+        print(f"{i} - {curso}")
+    print("0 - Voltar")
+    try:
+        opcao = int(input("Escolha um curso para ver mais: "))
+        if opcao == 0:
+            return
+        curso_nome = list(cursos.keys())[opcao - 1]
+        curso_detalhe(email, curso_nome)
+    except (ValueError, IndexError):
+        print("Opção inválida.")
+
+def curso_detalhe(email, curso_nome):
+    linha()
+    print(f"Curso: {curso_nome}")
+    if curso_nome not in usuarios[email]["matriculas"]:
+        print("Você ainda não está matriculado neste curso.")
+        opcao = input("Deseja se matricular? (s/n): ").lower()
+        if opcao == "s":
+            usuarios[email]["matriculas"][curso_nome] = {
+                "aulas": [
+                    {"titulo": "Aula 1 - Revisão", "conteudo": "Revisão geral", "lido": False},
+                    {"titulo": f"Aula 2 - Introdução à {curso_nome}", "conteudo": "Introdução ao tema", "lido": False},
+                    {"titulo": "Aula 3 - Avaliações finais e certificado", "conteudo": "Simulado e certificado", "lido": False}
+                ]
+            }
+            print(f"\nParabéns, {usuarios[email]['nome']}! Você está matriculado no curso.")
+            seguir = input("Digite 'seguir' para iniciar: ").lower()
+            if seguir == "seguir":
+                acessar_conteudo(email, curso_nome)
+        else:
+            return
+    else:
+        acessar_conteudo(email, curso_nome)
+
+def acessar_conteudo(email, curso_nome):
+    while True:
+        linha()
+        curso = usuarios[email]["matriculas"][curso_nome]
+        print(f"Conteúdo do curso: {curso_nome}")
+        for i, aula in enumerate(curso["aulas"], 1):
+            status = "✔" if aula["lido"] else "❌"
+            print(f"{i} - {aula['titulo']} [{status}]")
+        print("0 - Voltar")
+        try:
+            opcao = int(input("Escolha uma aula para acessar: "))
+            if opcao == 0:
+                return
+            aula_index = opcao - 1
+            if aula_index < 0 or aula_index >= len(curso["aulas"]):
+                print("Opção inválida.")
+                continue
+            if aula_index > 0 and not curso["aulas"][aula_index - 1]["lido"]:
+                print("Você precisa concluir a aula anterior primeiro.")
+                continue
+
+            aula = curso["aulas"][aula_index]
+            print(f"\n{aula['titulo']}")
+            print(f"Conteúdo: {aula['conteudo']}")
+            marcar = input("\nMarcar como lido? (s/n): ").lower()
+            if marcar == "s":
+                curso["aulas"][aula_index]["lido"] = True
+        except ValueError:
+            print("Entrada inválida. Digite o número da aula.")
+
+def menu_admin():
+    while True:
+        linha()
+        print("=== Painel do Administrador ===")
+        print("1 - Ver todos os usuários")
+        print("2 - Buscar usuário por CPF")
+        print("3 - Editar dados de um usuário")
+        print("0 - Sair")
+        linha()
+        opcao = input("Escolha uma opção: ")
+        if opcao == "1":
+            for email, dados in usuarios.items():
+                print(f"\nNome: {dados['nome']}")
+                print(f"E-mail: {email}")
+                print(f"CPF: {dados['cpf']}")
+                print(f"Endereço: {dados['endereco']}")
+                print("Cursos matriculados:", list(dados["matriculas"].keys()))
+        elif opcao == "2":
+            cpf_busca = input("Digite o CPF do usuário: ")
+            encontrado = False
+            for email, dados in usuarios.items():
+                if dados["cpf"] == cpf_busca:
+                    print(f"\nNome: {dados['nome']}")
+                    print(f"E-mail: {email}")
+                    print(f"Endereço: {dados['endereco']}")
+                    print("Cursos matriculados:", list(dados["matriculas"].keys()))
+                    encontrado = True
+                    break
+            if not encontrado:
+                print("Usuário não encontrado.")
+        elif opcao == "3":
+            email_editar = input("Digite o e-mail do usuário a ser editado: ")
+            if email_editar in usuarios:
+                print("Deixe em branco para não alterar.")
+                novo_email = input("Novo e-mail: ")
+                nova_senha = input("Nova senha: ")
+                novo_cpf = input("Novo CPF: ")
+
+                if novo_email:
+                    usuarios[novo_email] = usuarios.pop(email_editar)
+                    email_editar = novo_email
+                if nova_senha:
+                    usuarios[email_editar]["senha"] = nova_senha
+                if novo_cpf:
+                    usuarios[email_editar]["cpf"] = novo_cpf
+
+                print("Dados atualizados.")
+            else:
+                print("Usuário não encontrado.")
+        elif opcao == "0":
+            break
+        else:
+            print("Opção inválida.")
+
+# Iniciar o sistema
+if __name__ == "__main__":
+    menu_login()
+    pause()
