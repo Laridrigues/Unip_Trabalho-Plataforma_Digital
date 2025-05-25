@@ -1,6 +1,7 @@
 # Plataforma de Educação Digital
 
 Este é um sistema de **Plataforma de Educação Digital** simples, desenvolvido em **Python**, que permite o cadastro de usuários, autenticação, matrícula em cursos e administração de usuários.
+Envolvidos: Bianca Freitas Alcantara Santos; Fillipi Lucas de Souza Nobre; Vinicius Mendes Rocha e Gustavo Phelipe Aragão da Silva.
 
 ## ✅ Funcionalidades
 
